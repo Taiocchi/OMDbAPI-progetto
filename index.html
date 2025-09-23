@@ -43,16 +43,12 @@
         <button id="button1">Clicca</button>
     </div>
     <div id="film-container" class="lista-film">
-        <!-- <p id="Title"></p>
-        <p id="Year"></p>
-        <p id="imdbID"></p>
-        <p id="Type"></p>
-        <p id="Poster"></p> -->
     </div>
 </body>
 <script>
     const titoloFilm = document.getElementById("input");
     const button = document.getElementById("button1");
+    let i = 0;
 
     async function caricaFilm() {
       try {
@@ -64,28 +60,28 @@
       }
     }
 
-    function mostraFilm(dati)
-    {
+    function mostraFilm(dati) {
         const contenitore = document.getElementById('film-container');
         contenitore.innerHTML = '';
-        dati.Search.forEach( elemento => {
-            let i = 0;
+
+        dati.Search.forEach((elemento, i) => {
             const div = document.createElement('div');
-            div.className = 'Film${i}';
-            div.textContent = `ID ${elemento.imdbID}`;
-
-            div.innerHTML = "<p>${elemento.Title}</p>";
-            div.innerHTML = "<p>${elemento.Year}</p>";
-            div.innerHTML = "<p>${elemento.imdbID}</p>";
-            div.innerHTML = "<p>${elemento.Type}</p>";
-            /* div.innerHTML = "<p>${elemento.Poster}</p>"; */
+            div.className = `Film${i}`;
             
-            contenitore.appendChild(div);
+            div.innerHTML = `
+                <p><strong>Titolo:</strong> ${elemento.Title}</p>
+                <p><strong>Anno:</strong> ${elemento.Year}</p>
+                <p><strong>ID:</strong> ${elemento.imdbID}</p>
+                <p><strong>Tipo:</strong> ${elemento.Type}</p>
+                <img src="${elemento.Poster}" alt="${elemento.Title}" />
+            `;
 
-            i++
+            contenitore.appendChild(div);
         });
+
         console.log(dati);
     }
+
 
     button.addEventListener("click", caricaFilm);  
 </script>
