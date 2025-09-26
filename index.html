@@ -3,80 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Ricerca Film</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <style>
-
     h1 {
+        text-align: center;
+        margin: 20px 0;
+    }
+    .div-input_bottone {
         text-align: center;
         margin-bottom: 20px;
     }
-
-    input {
-        padding: 10px;
-        font-size: 16px;
-    }
-
-    button {
-        padding: 10px 20px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-
-    .div-input_bottone{
-        text-align: center;
-    }
-
-    #div-film{
-        text-align: center;
-    }
 </style>
-<body>
-    <h1>RICERCA FILM</h1>
+<body class="bg-light">
+    <h1>🎬 RICERCA FILM</h1>
     <div class="div-input_bottone">
-        <input type="text" id="input">
-        <button id="button1">Clicca</button>
+        <input type="text" id="input" class="form-control d-inline-block w-50" placeholder="Inserisci titolo film">
+        <button id="button1" class="btn btn-primary ms-2">Cerca</button>
     </div>
-    <div id="div-film"></div>
-</body>
-<script>
-    const titoloFilm = document.getElementById("input");
-    const button = document.getElementById("button1");
-    let i = 0;
+    <div id="div-film" class="d-flex flex-wrap justify-content-center"></div>
 
-    async function caricaFilm() {
-      try {
-        const risposta = await fetch('https://www.omdbapi.com/?apikey=5ed8d555&s=' + titoloFilm.value);
-        const dati = await risposta.json();
-        mostraFilm(dati);
-      } catch (errore) {
-        console.error('Errore nel recupero dei film:', errore);
-      }
-    }
+    <div class="d-flex justify-content-center my-4">
+        <button id="Precedente" class="btn btn-secondary me-2">Precedente</button>
+        <button id="Successiva" class="btn btn-primary">Successiva</button>
+    </div>
 
-    function mostraFilm(dati) {
-        const contenitore = document.getElementById('div-film');
-        contenitore.innerHTML = '';
+    <script>
+        const titoloFilm = document.getElementById("input");
+        const button = document.getElementById("button1");
+        const button_Successiva = document.getElementById("Successiva");
+        const button_Precedente = document.getElementById("Precedente");
+        let numeroPagina = 1;
+        let paginaFinale;
 
-        dati.Search.forEach((elemento, i) => {
-            const div = document.createElement('div');
-            div.className = `Film${i}`;
-            
-            div.innerHTML = `
-                <p><strong>Titolo:</strong> ${elemento.Title}</p>
-                <p><strong>Anno:</strong> ${elemento.Year}</p>
-                <p><strong>ID:</strong> ${elemento.imdbID}</p>
-                <p><strong>Tipo:</strong> ${elemento.Type}</p>
-                <img src="${elemento.Poster}" alt="${elemento.Title}" />
-            `;
+        async function caricaFilm() {
+            try {
+                const risposta = await fetch(`https://www.omdbapi.com/?apikey=5ed8d555&s=${titoloFilm.value}&page=${numeroPagina}`);
+                const dati = await risposta.json();
+                paginaFinale = Math.ceil(dati.totalResults / 10);
 
-            contenitore.appendChild(div);
+                button_Precedente.disabled = numeroPagina === 1;
+                button_Successiva.disabled = numeroPagina === paginaFinale;
+
+                mostraFilm(dati);
+            } catch (errore) {
+                console.error('Errore nel recupero dei film:', errore);
+            }
+        }
+
+        function mostraFilm(dati) {
+            const contenitore = document.getElementById('div-film');
+            contenitore.innerHTML = '';
+
+            if (!dati.Search) {
+                contenitore.innerHTML = `<p class="text-danger">Nessun film trovato.</p>`;
+                return;
+            }
+
+            dati.Search.forEach((elemento) => {
+
+                const card = document.createElement('div');
+                card.className = "card m-2";
+                card.style.width = "18rem";
+
+                card.innerHTML = `
+                    <div class="card-body">
+                        <h5 class="card-title">${elemento.Title}</h5>
+                        <p class="card-text"><strong>Anno:</strong> ${elemento.Year}</p>
+                        <p class="card-text"><strong>Tipo:</strong> ${elemento.Type}</p>
+                        <img src="${elemento.Poster}" class="card-img-top" alt="${elemento.Title}"> 
+                    </div>
+                `;
+
+                contenitore.appendChild(card);
+            });         
+        }
+
+        button_Precedente.addEventListener("click", ()=>{
+            if (numeroPagina > 1) {
+                numeroPagina--;
+                caricaFilm();
+            }
         });
 
-        console.log(dati);
-    }
+        button_Successiva.addEventListener("click", ()=>{
+            if (numeroPagina < paginaFinale) {
+                numeroPagina++;
+                caricaFilm();
+            }
+        });
 
-
-    button.addEventListener("click", caricaFilm);  
-</script>
+        button.addEventListener("click", caricaFilm);  
+    </script>
+</body>
 </html>
